@@ -1,0 +1,15 @@
+{
+  "name": "qni-console-web",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "msgpack-lite": "^0.1.26",
+    "requirejs": "^2.3.5",
+    "typescript": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/msgpack-lite": "^0.1.6",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^7.1.0"
+  }
+}

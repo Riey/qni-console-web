@@ -1,0 +1,10 @@
+localhost:4464, 127.0.0.1:4464, 192.168.1.173:4464
+gzip
+
+root ./public
+
+proxy /ws http://127.0.0.1:4434 {
+    websocket
+    header_upstream Connection Upgrade
+    header_upstream Upgrade WebSocket
+}

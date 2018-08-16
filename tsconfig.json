@@ -1,0 +1,14 @@
+{
+    "include": [
+        "./public/src/**/*"
+    ],
+    "compilerOptions": {
+        "target": "es6",
+        "module": "amd",
+        "outFile": "./public/dist/bundle.js",
+        "rootDir": "./public/src",
+        "baseUrl": "./public",
+        "moduleResolution": "classic",
+        "sourceMap": true
+    }
+}

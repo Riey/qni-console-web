@@ -1,0 +1,33 @@
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="assets/css/qni.css ">
+</head>
+
+<body id="body">
+  <p id="qni-console-box"></p>
+  <p id="qni-input-box">
+    <input id="qni-input">
+    <button id="qni-input-btn" class="btn">Send</button>
+  </p>
+
+  <script src="node_modules/msgpack-lite/dist/msgpack.min.js"></script>
+  <script src="node_modules/requirejs/require.js"></script>
+  <script src="dist/bundle.js"></script>
+  <script>
+    window.addEventListener('load', function () {
+      const consoleBox = this.document.getElementById('qni-console-box')
+      const input = this.document.getElementById('qni-input')
+      const inputBtn = this.document.getElementById('qni-input-btn')
+      require(['qni/qni_decoder'], function (decoder) {
+        decoder.start(`ws://192.168.1.173:4434`,
+          consoleBox,
+          input,
+          inputBtn)
+      });
+    })
+  </script>
+</body>
+
+</html>
