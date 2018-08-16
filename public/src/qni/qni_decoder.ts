@@ -64,8 +64,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
   }
 
   const inputUploadEvent = new Event('qni-input-upload', {
-    bubbles: false,
-    scoped: true
+    bubbles: false
   })
 
   qniConsole.dispatchEvent(inputUploadEvent)
