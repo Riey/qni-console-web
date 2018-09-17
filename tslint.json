@@ -4,6 +4,9 @@
         "tslint-config-standard"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+        "semicolon": true,
+        "quotemark": true
+    },
     "rulesDirectory": []
 }

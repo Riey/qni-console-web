@@ -9,6 +9,7 @@
         "rootDir": "./public/src",
         "baseUrl": "./public",
         "moduleResolution": "classic",
-        "sourceMap": true
+        "sourceMap": true,
+        "strict": true
     }
 }

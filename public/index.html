@@ -12,8 +12,8 @@
     <button id="qni-input-btn" class="btn">Send</button>
   </p>
 
-  <script src="node_modules/msgpack-lite/dist/msgpack.min.js"></script>
-  <script src="node_modules/requirejs/require.js"></script>
+  <script src="https://rawgit.com/kawanet/msgpack-lite/master/dist/msgpack.min.js"></script>
+  <script src="https://requirejs.org/docs/release/2.3.6/minified/require.js"></script>
   <script src="dist/bundle.js"></script>
   <script>
     window.addEventListener('load', function () {
@@ -21,7 +21,7 @@
       const input = this.document.getElementById('qni-input')
       const inputBtn = this.document.getElementById('qni-input-btn')
       require(['qni/qni_decoder'], function (decoder) {
-        decoder.start(`ws://127.0.0.1:4434`,
+        decoder.start(`ws://192.168.1.173:4434`,
           consoleBox,
           input,
           inputBtn)
