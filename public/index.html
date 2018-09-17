@@ -21,7 +21,7 @@
       const input = this.document.getElementById('qni-input')
       const inputBtn = this.document.getElementById('qni-input-btn')
       require(['qni/qni_decoder'], function (decoder) {
-        decoder.start(`ws://192.168.1.173:4434`,
+        decoder.start(`ws://127.0.0.1:4434`,
           consoleBox,
           input,
           inputBtn)
