@@ -1,7 +1,8 @@
 {
   "name": "qni-console-web",
   "version": "1.0.0",
-  "description": "",
+  "license": "GPL-3.0",
+  "description": "qni web console",
   "scripts": {
     "build": "npx tsc -p ../tsconfig.json"
   },

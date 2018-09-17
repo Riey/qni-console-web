@@ -112,6 +112,8 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
       case QniInputRequestDataType.INPUT_REQ_INT:
       case QniInputRequestDataType.INPUT_REQ_INT_MAX_LEN:
         {
+          if (isNaN(input.valueAsNumber)) return;
+
           sendInputRes(root,
             [[QniInputResponseDataType.INPUT_RES_INT, input.valueAsNumber], curInputReq[2]]);
           break;
@@ -130,7 +132,6 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         }
     }
 
-    input.type = "text";
     input.value = "";
   }
 
@@ -256,6 +257,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
       span.addEventListener("touchend", mouseleave);
 
       qniConsole.addEventListener("qni-input-upload", function inputupdate () {
+        span.style.color = color;
         span.removeEventListener("mouseenter", mouseenter);
         span.removeEventListener("touchstart", mouseenter);
         span.removeEventListener("mouseleave", mouseleave);
@@ -291,6 +293,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         }
       }
     };
+
     span.addEventListener("click", click);
 
     qniConsole.addEventListener("qni-input-upload", function inputUpdate () {
@@ -439,11 +442,11 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         case QniProgramMessageType.PROG_MSG_RES: {
           const res = msg[1] as QniProgramResponse;
           processResponse(res);
+          checkMaxLog();
           break;
         }
       }
 
-      checkMaxLog();
       document.documentElement.style.backgroundColor = setting.backColor;
       input.style.color = setting.textColor;
       inputBtn.style.color = setting.textColor;
