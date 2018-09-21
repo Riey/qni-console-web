@@ -10,7 +10,7 @@ class QniConsoleSetting {
   highlightColor: string | null = null;
   font: QniFont = [null, 3, QniFontStyle.REGULAR];
   fontSizeCache: string = "3rem";
-  align: string = "left";
+  align: string = "line-left";
 
   setFont (font: QniFont) {
     this.font = font;
@@ -20,9 +20,9 @@ class QniConsoleSetting {
 
 function qniTextAlignToHtml (align: QniTextAlign) {
   switch (align) {
-    case QniTextAlign.LEFT: return "left";
-    case QniTextAlign.CENTER: return "center";
-    case QniTextAlign.RIGHT: return "right";
+    case QniTextAlign.LEFT: return "line-left";
+    case QniTextAlign.CENTER: return "line-center";
+    case QniTextAlign.RIGHT: return "line-right";
   }
 }
 
@@ -42,12 +42,15 @@ enum InputRoot {
 
 export function start (url: string, qniConsole: HTMLElement, input: HTMLInputElement, inputBtn: HTMLButtonElement) {
 
+  const setting = new QniConsoleSetting();
+
   function makeNewLine () {
     const line = document.createElement("div");
     return qniConsole.appendChild(line);
   }
 
   let lastLine = makeNewLine();
+  lastLine.className = setting.align;
 
   let newLineFlag = true;
 
@@ -59,8 +62,6 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
   }
 
   clearConsole();
-
-  const setting = new QniConsoleSetting();
 
   const ws = new WebSocket(url);
   ws.binaryType = "arraybuffer";
@@ -370,6 +371,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
           }
           case QniConsoleSettingItemType.SETTING_TEXT_ALIGN: {
             setting.align = qniTextAlignToHtml(item[1] as QniTextAlign);
+            lastLine.className = setting.align;
             break;
           }
         }
