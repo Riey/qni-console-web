@@ -1,0 +1,41 @@
+{
+  "name": "qni-console-web",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "npm run make_api && npx webpack --optimize-minimize --define process.env.NODE_ENV=\"'production'\"",
+    "make_api": "protoc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" --js_out=import_style=commonjs,binary:src --proto_path=./qni-api --ts_out=src qni-api.proto"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Riey/qni-console-web.git"
+  },
+  "keywords": [
+    "qni"
+  ],
+  "author": "Riey",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Riey/qni-console-web/issues"
+  },
+  "homepage": "https://github.com/Riey/qni-console-web#readme",
+  "dependencies": {
+    "@types/google-protobuf": "^3.2.7",
+    "browserify": "^16.2.3",
+    "google-protobuf": "^3.6.1",
+    "ts-protoc-gen": "^0.7.6",
+    "tsify": "^4.0.0",
+    "typescript": "^3.0.3",
+    "webpack": "^4.20.2"
+  },
+  "devDependencies": {
+    "awesome-typescript-loader": "^5.2.1",
+    "source-map-loader": "^0.2.4",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1",
+    "tslint-loader": "^3.6.0",
+    "uglify-js": "^3.4.9",
+    "webpack-bundle-analyzer": "^3.0.2",
+    "webpack-cli": "^3.1.1"
+  }
+}
