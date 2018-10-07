@@ -3,7 +3,7 @@ import { Empty } from "google-protobuf/google/protobuf/empty_pb.js";
 
 const MAX_LOG = 1000;
 
-function make_new_font(fontSize: number) {
+function make_new_font (fontSize: number) {
   const font = new Font();
   font.setFontFamily("");
   font.setFontSize(fontSize);
@@ -20,13 +20,13 @@ class QniConsoleSetting {
   fontSizeCache: string = "3rem";
   align: string = "line-left";
 
-  setFont(font: Font) {
+  setFont (font: Font) {
     this.font = font;
     this.fontSizeCache = font.getFontSize() + "rem";
   }
 }
 
-function qniTextAlignToHtml(align: TextAlign) {
+function qniTextAlignToHtml (align: TextAlign) {
   switch (align) {
     case TextAlign.LEFT: return "line-left";
     case TextAlign.CENTER: return "line-center";
@@ -34,7 +34,7 @@ function qniTextAlignToHtml(align: TextAlign) {
   }
 }
 
-function qniColorToHtml(color: number) {
+function qniColorToHtml (color: number) {
   return `rgb(${color & 0x00FF0000 >> 4}, ${color & 0x0000FF00 >> 2}, ${color & 0x000000FF >> 0})`;
 }
 
@@ -48,10 +48,10 @@ enum InputRoot {
   Touch
 }
 
-export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElement, inputBtn: HTMLButtonElement) {
+export function start (url: string, qniConsole: HTMLElement, input: HTMLInputElement, inputBtn: HTMLButtonElement) {
   const setting = new QniConsoleSetting();
 
-  function makeNewLine() {
+  function makeNewLine () {
     const line = document.createElement("div");
     return qniConsole.appendChild(line);
   }
@@ -61,12 +61,12 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
 
   let newLineFlag = true;
 
-  function newline() {
+  function newline () {
     lastLine = makeNewLine();
     newLineFlag = true;
   }
 
-  function clearConsole() {
+  function clearConsole () {
     if (qniConsole.lastChild !== null) {
       qniConsole.removeChild(qniConsole.lastChild);
     }
@@ -78,28 +78,37 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
   const ws = new WebSocket(url);
   ws.binaryType = "arraybuffer";
 
-  let curInputReq: InputRequest | null = null;
+  let curReq: ProgramRequest | null = null;
+
+  function getCurInputReq (): InputRequest | null {
+    if (curReq === null) return null;
+
+    const inputReq = curReq.getInput();
+
+    return inputReq === undefined ? null : inputReq;
+  }
+
   let curInputMaxLen: number | null = null;
   let statusPos = 0;
 
-  function sendMsg(msg: ConsoleMessage) {
+  function sendMsg (msg: ConsoleMessage) {
     ws.send(msg.serializeBinary());
   }
 
-  function sendReq(req: ConsoleRequest) {
+  function sendReq (req: ConsoleRequest) {
     const msg = new ConsoleMessage();
     msg.setReq(req);
     sendMsg(msg);
   }
 
-  function sendRes(res: ConsoleResponse) {
+  function sendRes (res: ConsoleResponse) {
     const msg = new ConsoleMessage();
     msg.setRes(res);
     sendMsg(msg);
   }
 
-  function sendInputRes(_: InputRoot, input: InputResponse) {
-    if (curInputReq === null) return;
+  function sendInputRes (_: InputRoot, input: InputResponse) {
+    if (getCurInputReq() === null) return;
 
     const res = new ConsoleResponse();
     res.setOkInput(input);
@@ -108,20 +117,19 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     qniConsole.dispatchEvent(inputUploadEvent);
   }
 
-  function updateStatus() {
+  function updateStatus () {
     const req = new ConsoleRequest();
     req.setGetState(statusPos);
     sendReq(req);
-
-    if (curInputReq === null && ws.readyState === ws.CONNECTING) {
-      setTimeout(updateStatus, 200);
-    }
   }
 
-  function sendInputByInputElem(root: InputRoot) {
-    if (curInputReq === null) return;
+  function sendInputByInputElem (root: InputRoot) {
 
-    switch (curInputReq.getDataCase()) {
+    const inputReq = getCurInputReq();
+
+    if (inputReq === null) return;
+
+    switch (inputReq.getDataCase()) {
       case InputRequest.DataCase.ANYKEY:
       case InputRequest.DataCase.ENTER:
       case InputRequest.DataCase.TOUCH:
@@ -171,17 +179,20 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     }
   });
 
-  function checkMaxLog() {
+  function checkMaxLog () {
     let diff = qniConsole.childElementCount - MAX_LOG;
     while (--diff >= 0 && qniConsole.firstChild !== null) {
       qniConsole.removeChild(qniConsole.firstChild);
     }
   }
 
-  function updateInput() {
-    if (curInputReq === null) return;
+  function updateInput () {
 
-    switch (curInputReq.getDataCase()) {
+    const inputReq = getCurInputReq();
+
+    if (inputReq === null) return;
+
+    switch (inputReq.getDataCase()) {
       case InputRequest.DataCase.ANYKEY:
       case InputRequest.DataCase.ENTER:
       case InputRequest.DataCase.TOUCH:
@@ -193,7 +204,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
       case InputRequest.DataCase.STR_MAX_LEN:
         {
           input.type = "text";
-          curInputMaxLen = curInputReq.getStrMaxLen();
+          curInputMaxLen = inputReq.getStrMaxLen();
           break;
         }
       case InputRequest.DataCase.STR:
@@ -211,7 +222,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
       case InputRequest.DataCase.INT_MAX_LEN:
         {
           input.type = "number";
-          curInputMaxLen = curInputReq.getIntMaxLen();
+          curInputMaxLen = inputReq.getIntMaxLen();
           break;
         }
       default:
@@ -222,7 +233,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     }
   }
 
-  function deleteline(count: number) {
+  function deleteline (count: number) {
 
     if (newLineFlag) {
       qniConsole.removeChild(lastLine);
@@ -237,7 +248,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     }
   }
 
-  function createPrintSpan(highlight: boolean): HTMLSpanElement {
+  function createPrintSpan (highlight: boolean): HTMLSpanElement {
     const span = document.createElement("span");
     span.style.color = setting.textColor;
     span.style.background = setting.backColor;
@@ -273,7 +284,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
       span.addEventListener("mouseleave", mouseleave);
       span.addEventListener("touchend", mouseleave);
 
-      qniConsole.addEventListener("qni-input-upload", function inputupdate() {
+      qniConsole.addEventListener("qni-input-upload", function inputupdate () {
         span.style.color = color;
         span.removeEventListener("mouseenter", mouseenter);
         span.removeEventListener("touchstart", mouseenter);
@@ -286,14 +297,14 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     return span;
   }
 
-  function print(str: string) {
+  function print (str: string) {
     const span = createPrintSpan(false);
 
     span.innerText = str;
     lastLine.appendChild(span);
   }
 
-  function printbtn(str: string, data: InputResponse | undefined) {
+  function printbtn (str: string, data: InputResponse | undefined) {
     const span = createPrintSpan(true);
 
     span.innerText = str;
@@ -301,7 +312,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     if (data !== undefined) {
 
       const click = (e: any) => {
-        if (!curInputReq) return false;
+        if (!getCurInputReq()) return false;
 
         switch (e.button) {
           // left btn
@@ -316,7 +327,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
 
       span.addEventListener("click", click);
 
-      qniConsole.addEventListener("qni-input-upload", function inputUpdate() {
+      qniConsole.addEventListener("qni-input-upload", function inputUpdate () {
         span.removeEventListener("click", click);
         qniConsole.removeEventListener("qni-input-upload", inputUpdate);
       });
@@ -325,11 +336,9 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     lastLine.appendChild(span);
   }
 
-  function runCommand(com: ProgramCommand) {
+  function runCommand (com: ProgramCommand) {
     switch (com.getDataCase()) {
       case ProgramCommand.DataCase.PRINT: {
-        console.log(`print: ${com.toObject()}`);
-
         const printData = com.getPrint();
 
         if (printData === undefined) return;
@@ -413,39 +422,36 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
     }
   }
 
-  function processRequest(req: ProgramRequest) {
+  function processRequest (req: ProgramRequest) {
+    curReq = req;
+
     switch (req.getDataCase()) {
       case ProgramRequest.DataCase.INPUT: {
-        curInputReq = req.getInput() || null;
         updateInput();
-        break;
-      }
-
-      case ProgramRequest.DataCase.ACCEPT_INPUT: {
-        if (curInputReq !== null && curInputReq.getTag() <= (req.getAcceptInput())) {
-          curInputReq = null;
-        }
-
-        const res = new ConsoleResponse();
-        res.setOkAcceptInput(new Empty());
-        sendRes(res);
-        updateInput();
-        updateStatus();
         break;
       }
     }
   }
 
-  function processResponse(res: ProgramResponse) {
+  function processResponse (res: ProgramResponse) {
     switch (res.getDataCase()) {
       case ProgramResponse.DataCase.OK_GET_STATE: {
+
         const state = res.getOkGetState();
 
-        if (state === undefined) return;
+        if (state === undefined) {
+          updateStatus();
+          return;
+        }
 
         const commands = state.getCommandsList();
         commands.forEach(runCommand);
         statusPos += commands.length;
+
+        if (getCurInputReq() === null && (ws.readyState === ws.CONNECTING || ws.readyState === ws.OPEN)) {
+          setTimeout(updateStatus, 250);
+        }
+
         break;
       }
       case ProgramResponse.DataCase.OK_LOAD_STATE: {
@@ -464,7 +470,7 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
 
         if (err === undefined) return;
 
-        console.error(`request failed: order [${err.getReqType()} reason [${err.getReason()}]`);
+        console.error(`request failed: type [${err.getReqType()}] reason [${err.getReason()}]`);
         break;
       }
     }
@@ -497,6 +503,17 @@ export function start(url: string, qniConsole: HTMLElement, input: HTMLInputElem
           checkMaxLog();
           break;
         }
+        case ProgramMessage.DataCase.ACCEPT_RES: {
+          const accept = msg.getAcceptRes();
+
+          if (curReq !== null && curReq.getTag() <= accept) {
+            curReq = null;
+            updateInput();
+            updateStatus();
+          }
+
+          break;
+        }
       }
 
       document.documentElement.style.backgroundColor = setting.backColor;
@@ -526,6 +543,8 @@ window.addEventListener("load", () => {
 
   if (url.length === 0) {
     url = "ws://127.0.0.1:4434";
+  } else {
+    url = url.substr(1);
   }
 
   start(url, consoleBox, input as HTMLInputElement, inputBtn as HTMLButtonElement);
