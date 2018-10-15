@@ -1,6 +1,6 @@
 {
     "include": [
-        "public/src/**/*"
+        "src/**/*"
     ],
     "compilerOptions": {
         "target": "es5",

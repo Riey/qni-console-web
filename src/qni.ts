@@ -80,14 +80,6 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
   let curReq: ProgramRequest | null = null;
 
-  function getCurInputReq (): InputRequest | null {
-    if (curReq === null) return null;
-
-    const inputReq = curReq.getInput();
-
-    return inputReq === undefined ? null : inputReq;
-  }
-
   let curInputMaxLen: number | null = null;
   let statusPos = 0;
 
@@ -107,10 +99,9 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
     sendMsg(msg);
   }
 
-  function sendInputRes (_: InputRoot, input: InputResponse) {
-    if (getCurInputReq() === null) return;
-
+  function sendInputRes (_: InputRoot, tag: number, input: InputResponse) {
     const res = new ConsoleResponse();
+    res.setTag(tag);
     res.setOkInput(input);
 
     sendRes(res);
@@ -125,9 +116,15 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
   function sendInputByInputElem (root: InputRoot) {
 
-    const inputReq = getCurInputReq();
+    if (curReq === null) {
+      return;
+    }
 
-    if (inputReq === null) return;
+    const inputReq = curReq.getInput();
+
+    if (inputReq === undefined) {
+      return;
+    }
 
     switch (inputReq.getDataCase()) {
       case InputRequest.DataCase.ANYKEY:
@@ -136,7 +133,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         {
           const res = new InputResponse();
           res.setEmpty(new Empty());
-          sendInputRes(root, res);
+          sendInputRes(root, curReq.getTag(), res);
           break;
         }
       case InputRequest.DataCase.INT:
@@ -146,7 +143,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
           const res = new InputResponse();
           res.setInt(input.valueAsNumber);
-          sendInputRes(root, res);
+          sendInputRes(root, curReq.getTag(), res);
           break;
         }
       case InputRequest.DataCase.STR:
@@ -154,7 +151,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         {
           const res = new InputResponse();
           res.setStr(input.value);
-          sendInputRes(root, res);
+          sendInputRes(root, curReq.getTag(), res);
           break;
         }
       default:
@@ -188,9 +185,9 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
   function updateInput () {
 
-    const inputReq = getCurInputReq();
+    const inputReq = curReq ? curReq.getInput() : undefined;
 
-    if (inputReq === null) return;
+    if (inputReq === undefined) return;
 
     switch (inputReq.getDataCase()) {
       case InputRequest.DataCase.ANYKEY:
@@ -312,14 +309,14 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
     if (data !== undefined) {
 
       const click = (e: any) => {
-        if (!getCurInputReq()) return false;
+        if (curReq === null) return false;
 
         switch (e.button) {
           // left btn
           case 0:
           // middle btn
           case 1: {
-            sendInputRes(InputRoot.Touch, data);
+            sendInputRes(InputRoot.Touch, curReq.getTag(), data);
             break;
           }
         }
@@ -448,7 +445,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         commands.forEach(runCommand);
         statusPos += commands.length;
 
-        if (getCurInputReq() === null && (ws.readyState === ws.CONNECTING || ws.readyState === ws.OPEN)) {
+        if (curReq === null && (ws.readyState === ws.CONNECTING || ws.readyState === ws.OPEN)) {
           setTimeout(updateStatus, 250);
         }
 
@@ -516,7 +513,10 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         }
       }
 
-      document.documentElement.style.backgroundColor = setting.backColor;
+      if (document.documentElement !== null) {
+        document.documentElement.style.backgroundColor = setting.backColor;
+      }
+
       input.style.color = setting.textColor;
       inputBtn.style.color = setting.textColor;
 
