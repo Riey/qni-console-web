@@ -31,6 +31,7 @@ function qniTextAlignToHtml (align: TextAlign) {
     case TextAlign.LEFT: return "line-left";
     case TextAlign.CENTER: return "line-center";
     case TextAlign.RIGHT: return "line-right";
+    default: return "line-left";
   }
 }
 
@@ -51,7 +52,7 @@ enum InputRoot {
 export function start (url: string, qniConsole: HTMLElement, input: HTMLInputElement, inputBtn: HTMLButtonElement) {
   const setting = new QniConsoleSetting();
 
-  function makeNewLine () {
+  function makeNewLine (): HTMLDivElement {
     const line = document.createElement("div");
     return qniConsole.appendChild(line);
   }
@@ -61,7 +62,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
   let newLineFlag = true;
 
-  function newline () {
+  function newLine () {
     lastLine = makeNewLine();
     newLineFlag = true;
   }
@@ -70,7 +71,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
     if (qniConsole.lastChild !== null) {
       qniConsole.removeChild(qniConsole.lastChild);
     }
-    newline();
+    newLine();
   }
 
   clearConsole();
@@ -129,31 +130,28 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
     switch (inputReq.getDataCase()) {
       case InputRequest.DataCase.ANYKEY:
       case InputRequest.DataCase.ENTER:
-      case InputRequest.DataCase.TOUCH:
-        {
-          const res = new InputResponse();
-          res.setEmpty(new Empty());
-          sendInputRes(root, curReq.getTag(), res);
-          break;
-        }
+      case InputRequest.DataCase.TOUCH: {
+        const res = new InputResponse();
+        res.setEmpty(new Empty());
+        sendInputRes(root, curReq.getTag(), res);
+        break;
+      }
       case InputRequest.DataCase.INT:
-      case InputRequest.DataCase.INT_MAX_LEN:
-        {
-          if (isNaN(input.valueAsNumber)) return;
+      case InputRequest.DataCase.INT_MAX_LEN: {
+        if (isNaN(input.valueAsNumber)) return;
 
-          const res = new InputResponse();
-          res.setInt(input.valueAsNumber);
-          sendInputRes(root, curReq.getTag(), res);
-          break;
-        }
+        const res = new InputResponse();
+        res.setInt(input.valueAsNumber);
+        sendInputRes(root, curReq.getTag(), res);
+        break;
+      }
       case InputRequest.DataCase.STR:
-      case InputRequest.DataCase.STR_MAX_LEN:
-        {
-          const res = new InputResponse();
-          res.setStr(input.value);
-          sendInputRes(root, curReq.getTag(), res);
-          break;
-        }
+      case InputRequest.DataCase.STR_MAX_LEN: {
+        const res = new InputResponse();
+        res.setStr(input.value);
+        sendInputRes(root, curReq.getTag(), res);
+        break;
+      }
       default:
         {
           // TODO implmenet
@@ -192,36 +190,31 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
     switch (inputReq.getDataCase()) {
       case InputRequest.DataCase.ANYKEY:
       case InputRequest.DataCase.ENTER:
-      case InputRequest.DataCase.TOUCH:
-        {
-          input.hidden = true;
-          curInputMaxLen = null;
-          break;
-        }
-      case InputRequest.DataCase.STR_MAX_LEN:
-        {
-          input.type = "text";
-          curInputMaxLen = inputReq.getStrMaxLen();
-          break;
-        }
-      case InputRequest.DataCase.STR:
-        {
-          input.type = "text";
-          curInputMaxLen = null;
-          break;
-        }
-      case InputRequest.DataCase.INT:
-        {
-          input.type = "number";
-          curInputMaxLen = null;
-          break;
-        }
-      case InputRequest.DataCase.INT_MAX_LEN:
-        {
-          input.type = "number";
-          curInputMaxLen = inputReq.getIntMaxLen();
-          break;
-        }
+      case InputRequest.DataCase.TOUCH: {
+        input.hidden = true;
+        curInputMaxLen = null;
+        break;
+      }
+      case InputRequest.DataCase.STR_MAX_LEN: {
+        input.type = "text";
+        curInputMaxLen = inputReq.getStrMaxLen();
+        break;
+      }
+      case InputRequest.DataCase.STR: {
+        input.type = "text";
+        curInputMaxLen = null;
+        break;
+      }
+      case InputRequest.DataCase.INT: {
+        input.type = "number";
+        curInputMaxLen = null;
+        break;
+      }
+      case InputRequest.DataCase.INT_MAX_LEN: {
+        input.type = "number";
+        curInputMaxLen = inputReq.getIntMaxLen();
+        break;
+      }
       default:
         {
           input.type = "text";
@@ -241,8 +234,19 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
     }
 
     if (newLineFlag) {
-      newline();
+      newLine();
     }
+  }
+
+  function drawLine () {
+    if (!newLineFlag) {
+      newLine();
+    }
+
+    const line = document.createElement("hr");
+    line.style.color = setting.textColor;
+    line.className = "era-drawline";
+    lastLine.appendChild(line);
   }
 
   function createPrintSpan (highlight: boolean): HTMLSpanElement {
@@ -258,10 +262,6 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
     if (setting.font.getFontStyle() & FontStyle.ITALIC) {
       span.style.fontStyle = "italic";
-    }
-
-    if (setting.font.getFontStyle() & FontStyle.UNDERLINE) {
-      span.classList.add("underline");
     }
 
     if (highlight) {
@@ -301,7 +301,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
     lastLine.appendChild(span);
   }
 
-  function printbtn (str: string, data: InputResponse | undefined) {
+  function printBtn (str: string, data: InputResponse | undefined) {
     const span = createPrintSpan(true);
 
     span.innerText = str;
@@ -352,14 +352,19 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
             if (btnData === undefined) return;
 
-            printbtn(btnData.getText(), btnData.getValue());
+            printBtn(btnData.getText(), btnData.getValue());
             newLineFlag = false;
             break;
           }
 
           case ConsolePrintData.DataCase.PRINT_LINE: {
             print(printData.getPrintLine());
-            newline();
+            newLine();
+            break;
+          }
+
+          case ConsolePrintData.DataCase.DRAW_LINE: {
+            drawLine();
             break;
           }
 
@@ -374,7 +379,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
           }
 
           case ConsolePrintData.DataCase.NEW_LINE: {
-            newline();
+            newLine();
             break;
           }
         }
@@ -451,17 +456,6 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
 
         break;
       }
-      case ProgramResponse.DataCase.OK_LOAD_STATE: {
-        console.log("load success!");
-        statusPos = 0;
-        clearConsole();
-        updateStatus();
-        break;
-      }
-      case ProgramResponse.DataCase.OK_SHARE_STATE: {
-        console.log("share success! key: " + res.getOkShareState());
-        break;
-      }
       case ProgramResponse.DataCase.ERR: {
         const err = res.getErr();
 
@@ -513,9 +507,7 @@ export function start (url: string, qniConsole: HTMLElement, input: HTMLInputEle
         }
       }
 
-      if (document.documentElement !== null) {
-        document.documentElement.style.backgroundColor = setting.backColor;
-      }
+      document.documentElement.style.backgroundColor = setting.backColor;
 
       input.style.color = setting.textColor;
       inputBtn.style.color = setting.textColor;

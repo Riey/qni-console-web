@@ -27,8 +27,8 @@
   margin-bottom: 0;
 }
 
-.underline {
-  text-decoration-line: underline;
+.era-drawline {
+  width: 100%;
 }
 
 .line-left {
